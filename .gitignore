@@ -1,0 +1,6 @@
+.DS_Store
+__pycache__/
+# Generated offline build embeds the article text and audio
+U4带读.html
+# Dictionary audio is not redistributed; see dist/audio/sources.json
+dist/audio/*.mp3

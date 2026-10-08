@@ -1,0 +1,30 @@
+{
+  "hedonic": {
+    "source": "https://dictionary.cambridge.org/pronunciation/english/hedonic",
+    "audio": "https://dictionary.cambridge.org/media/english/us_pron/c/cdo/cdo03/cdo0318ushedo2261.mp3",
+    "accent": "US",
+    "credit": "Cambridge Dictionary / Cambridge University Press",
+    "retrieved": "2026-10-07"
+  },
+  "hierarchy": {
+    "source": "https://dictionary.cambridge.org/pronunciation/english/hierarchy",
+    "audio": "https://dictionary.cambridge.org/media/english/us_pron/e/eus/eus72/eus72210.mp3",
+    "accent": "US",
+    "credit": "Cambridge Dictionary / Cambridge University Press",
+    "retrieved": "2026-10-07"
+  },
+  "dichotomy": {
+    "source": "https://dictionary.cambridge.org/pronunciation/english/dichotomy",
+    "audio": "https://dictionary.cambridge.org/media/english/us_pron/e/eus/eus71/eus71269.mp3",
+    "accent": "US",
+    "credit": "Cambridge Dictionary / Cambridge University Press",
+    "retrieved": "2026-10-07"
+  },
+  "reign": {
+    "source": "https://dictionary.cambridge.org/pronunciation/english/reign",
+    "audio": "https://dictionary.cambridge.org/media/english/us_pron/r/rai/rain_/rain.mp3",
+    "accent": "US",
+    "credit": "Cambridge Dictionary / Cambridge University Press",
+    "retrieved": "2026-10-07"
+  }
+}
