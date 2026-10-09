@@ -353,6 +353,71 @@ function renderMap(){const idx=stageIndex();$('#map-nodes').innerHTML=stages.map
 function render(){const idx=stageIndex();$('#stages').innerHTML=stages.map((s,i)=>`<button class="stage ${i===idx?'active':''}" data-stage="${i}" aria-current="${i===idx?'step':'false'}"><small>${s.range}</small><strong>${s.name}</strong></button>`).join('');$('#paragraph-label').textContent=`${String(current+1).padStart(2,'0')} / 10`;$('#question').textContent=stages[idx].q;$('#stage-name').textContent=stages[idx].name;$('#summary').textContent=paragraphs[current].summary;$('#summary').hidden=!hint;$('#hint').textContent=hint?'隐藏段意':'显示段意';$('#hint').setAttribute('aria-expanded',hint);$('#dots').innerHTML=paragraphs.map((_,i)=>`<button data-paragraph="${i}" class="${i===current?'active':''}" aria-label="第 ${i+1} 段" aria-current="${i===current?'step':'false'}">${i+1}</button>`).join('');$('#prev').disabled=current===0;$('#next').textContent=current===9?'进入写作':'下一段';renderOriginal();renderLanguage();renderMap()}
 function setView(v){stopPronunciation();view=v;['intro','reading','writing'].forEach(id=>$('#'+id).hidden=id!==v);document.querySelectorAll('[data-view]').forEach(b=>{b.classList.toggle('active',b.dataset.view===v);b.setAttribute('aria-pressed',b.dataset.view===v)});}
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.pronounce){playPronunciation(b);return}const focusKey=['word','paragraph','stage','sentence'].find(k=>b.dataset[k]!==undefined);const focusClass=b.classList.contains('word-inline')?'.word-inline':b.classList.contains('word-chip')?'.word-chip':b.classList.contains('stage')?'.stage':'';if(b.dataset.paragraph!==undefined)selectParagraph(+b.dataset.paragraph);if(b.dataset.stage!==undefined)selectParagraph(stages[+b.dataset.stage].start);if(b.dataset.word!==undefined){const i=+b.dataset.word;word=word===i?null:i;language='words';renderOriginal();renderLanguage()}if(b.dataset.language){language=b.dataset.language;word=null;renderOriginal();renderLanguage()}if(b.hasAttribute('data-open-sentence')){language='sentences';word=null;renderOriginal();renderLanguage();$('.sentence-analysis summary').focus({preventScroll:true});$('.language').scrollIntoView({block:'nearest',behavior:'auto'})}if(b.dataset.jump!==undefined){selectParagraph(+b.dataset.jump)}if(b.dataset.view)setView(b.dataset.view);if(focusKey&&!b.isConnected){document.querySelector(`${focusClass}[data-${focusKey}="${b.dataset[focusKey]}"]`)?.focus({preventScroll:true})}});
-$('#hint').onclick=()=>{hint=!hint;$('#summary').hidden=!hint;$('#hint').textContent=hint?'隐藏段意':'显示段意';$('#hint').setAttribute('aria-expanded',hint)};$('#prev').onclick=()=>selectParagraph(current-1);$('#next').onclick=()=>current===9?setView('writing'):selectParagraph(current+1);$('#structure-toggle').onclick=()=>{structure=!structure;renderMap();if(structure)$('#structure').scrollIntoView({block:'start',behavior:'auto'})};$('#reveal').onclick=()=>{const s=stageIndex();revealed.has(s)?revealed.delete(s):revealed.add(s);renderMap()};$('.brand').onclick=e=>{e.preventDefault();setView('reading')};$('#fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch{$('#fullscreen').textContent='请使用浏览器全屏'}};document.addEventListener('fullscreenchange',()=>{$('#fullscreen').textContent=document.fullscreenElement?'退出全屏':'全屏演示'});document.addEventListener('keydown',e=>{if(view!=='reading'||e.altKey||e.metaKey||e.ctrlKey||['INPUT','TEXTAREA','SELECT','BUTTON','SUMMARY'].includes(document.activeElement.tagName))return;if(e.key==='ArrowRight'&&current<9){e.preventDefault();selectParagraph(current+1)}if(e.key==='ArrowLeft'&&current>0){e.preventDefault();selectParagraph(current-1)}});$('#structure-flow').innerHTML=stages.map(s=>`<li><span class="structure-range">${s.range}</span><span class="structure-fn">${s.fn}</span><h4>${s.title}</h4><ul>${s.points.map(p=>`<li>${p}</li>`).join('')}</ul></li>`).join('');render();
+$('#hint').onclick=()=>{hint=!hint;$('#summary').hidden=!hint;$('#hint').textContent=hint?'隐藏段意':'显示段意';$('#hint').setAttribute('aria-expanded',hint)};$('#prev').onclick=()=>selectParagraph(current-1);$('#next').onclick=()=>current===9?setView('writing'):selectParagraph(current+1);$('#structure-toggle').onclick=()=>{structure=!structure;renderMap();if(structure)$('#structure').scrollIntoView({block:'start',behavior:'auto'})};$('#reveal').onclick=()=>{const s=stageIndex();revealed.has(s)?revealed.delete(s):revealed.add(s);renderMap()};$('.brand').onclick=e=>{e.preventDefault();setView('reading')};$('#fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch{$('#fullscreen').textContent='请使用浏览器全屏'}};document.addEventListener('fullscreenchange',()=>{$('#fullscreen').textContent=document.fullscreenElement?'退出全屏':'全屏演示'});document.addEventListener('keydown',e=>{if(view!=='reading'||e.altKey||e.metaKey||e.ctrlKey||['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)||!$('#tools-panel').hidden)return;if(e.key==='ArrowRight'&&current<9){e.preventDefault();selectParagraph(current+1)}if(e.key==='ArrowLeft'&&current>0){e.preventDefault();selectParagraph(current-1)}});$('#structure-flow').innerHTML=stages.map(s=>`<li><span class="structure-range">${s.range}</span><span class="structure-fn">${s.fn}</span><h4>${s.title}</h4><ul>${s.points.map(p=>`<li>${p}</li>`).join('')}</ul></li>`).join('');render();
 
 $('#begin-reading').onclick=()=>{setView('reading');selectParagraph(0);$('#stages .stage').focus({preventScroll:true});window.scrollTo({top:0,behavior:'auto'})};
+
+/* Classroom tools: lesson timer with a scheduled start, and a random picker. State stays in this browser. */
+const store={get(k,d){try{return Object.assign({},d,JSON.parse(localStorage.getItem(k)||'{}'))}catch{return {...d}}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+// Minute by which the opener and each paragraph should be finished in a 40-minute lesson; scaled to the chosen length.
+const planLength=40,introDeadline=3.5,paragraphDeadlines=[5.75,8,10.5,13,15.5,18,22,27,32,39];
+const timer=store.get('u4-timer',{startAt:null,paused:null,scheduledAt:null,total:planLength,visible:true});
+const clock=ms=>{const s=Math.max(0,Math.floor(ms/1000));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+const timerIdle=()=>timer.startAt===null&&timer.paused===null;
+function saveTimer(){store.set('u4-timer',timer);renderTimerControls()}
+function toggleTimer(){const now=Date.now();if(timer.startAt!==null){timer.paused=now-timer.startAt;timer.startAt=null}else{timer.startAt=now-(timer.paused||0);timer.paused=null;timer.scheduledAt=null}saveTimer();tickTimer()}
+function showTime(now,total){const el=$('#timer');if(!el.firstElementChild)el.innerHTML='<span class="timer-now"></span><span class="timer-total"></span>';el.children[0].textContent=now;el.children[1].textContent=total}
+function tickTimer(){
+ const now=Date.now(),total=timer.total*60000,el=$('#timer');
+ if(timer.scheduledAt!==null&&now>=timer.scheduledAt){if(timerIdle()&&now-timer.scheduledAt<total+3600000)timer.startAt=timer.scheduledAt;timer.scheduledAt=null;saveTimer()}
+ el.hidden=!timer.visible;
+ if(timerIdle()&&timer.scheduledAt!==null){showTime('−'+clock(timer.scheduledAt-now),'');el.dataset.state='waiting';el.title='距定时启动的时间；点击立即开始';return}
+ const elapsed=timer.paused!==null?timer.paused:timer.startAt!==null?now-timer.startAt:0;
+ const deadline=(view==='intro'?introDeadline:view==='reading'?paragraphDeadlines[current]:planLength)*timer.total/planLength*60000;
+ showTime(clock(elapsed),' / '+clock(total));
+ el.dataset.state=timerIdle()?'idle':timer.paused!==null?'paused':elapsed>=total?'over':total-elapsed<=300000?'ending':elapsed>deadline?'behind':'ontrack';
+ el.title=timerIdle()?'点击开始计时':timer.paused!==null?'已暂停，点击继续':'点击暂停';
+}
+function renderTimerControls(){
+ $('#timer-toggle').textContent=timer.startAt!==null?'暂停':timer.paused!==null?'继续':'开始';
+ $('#timer-visible').checked=timer.visible;if(document.activeElement!==$('#timer-total'))$('#timer-total').value=timer.total;
+ $('#timer-status').textContent=timer.scheduledAt!==null?`已设定 ${new Date(timer.scheduledAt).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} 自动开始`:timer.startAt!==null?'计时中':timer.paused!==null?'已暂停':'未开始';
+}
+$('#timer').onclick=toggleTimer;$('#timer-toggle').onclick=toggleTimer;
+$('#timer-reset').onclick=()=>{timer.startAt=null;timer.paused=null;saveTimer();tickTimer()};
+$('#timer-visible').onchange=e=>{timer.visible=e.target.checked;saveTimer();tickTimer()};
+$('#timer-total').onchange=e=>{const n=Math.round(+e.target.value);if(n>=1&&n<=180)timer.total=n;saveTimer();tickTimer()};
+$('#timer-schedule-set').onclick=()=>{const t=new Date($('#timer-schedule').value).getTime();if(!t||t<=Date.now()){$('#timer-status').textContent='请选择一个将来的时间';return}timer.scheduledAt=t;timer.startAt=null;timer.paused=null;saveTimer();tickTimer()};
+$('#timer-schedule-clear').onclick=()=>{timer.scheduledAt=null;saveTimer();tickTimer()};
+{const d=new Date();d.setHours(8,40,0,0);if(d<=new Date())d.setDate(d.getDate()+1);const p=n=>String(n).padStart(2,'0');$('#timer-schedule').value=`${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T08:40`}
+renderTimerControls();tickTimer();setInterval(tickTimer,500);
+
+const picker=store.get('u4-picker',{names:'',count:40,noRepeat:true,picked:[]});
+let pickRun=0;
+function pickPool(){const names=picker.names.split('\n').map(s=>s.trim()).filter(Boolean);return names.length?names:Array.from({length:picker.count},(_,i)=>`${i+1} 号`)}
+function savePicker(){store.set('u4-picker',picker);const pool=pickPool();$('#pick-left').textContent=picker.noRepeat?`还剩 ${pool.filter(n=>!picker.picked.includes(n)).length} / ${pool.length}`:`共 ${pool.length} 人`}
+function pick(){
+ const pool=pickPool();let candidates=picker.noRepeat?pool.filter(n=>!picker.picked.includes(n)):pool;
+ if(!candidates.length){picker.picked=[];candidates=pool}
+ const chosen=candidates[Math.floor(Math.random()*candidates.length)],run=++pickRun,out=$('#pick-result');
+ if(picker.noRepeat)picker.picked.push(chosen);savePicker();
+ const stage=$('#pick-stage'),show=t=>{out.textContent=t;stage.textContent=t};
+ clearTimeout(pickHide);stage.hidden=false;stage.classList.remove('settled');
+ const settle=()=>{show(chosen);stage.classList.add('settled');pickHide=setTimeout(()=>{stage.hidden=true},3500)};
+ if(matchMedia('(prefers-reduced-motion:reduce)').matches){settle();return}
+ let n=0;(function spin(){if(run!==pickRun)return;if(n++<12){show(pool[Math.floor(Math.random()*pool.length)]);setTimeout(spin,45+n*7)}else settle()})();
+}
+let pickHide=0;document.body.insertAdjacentHTML('beforeend','<div id="pick-stage" class="pick-stage" role="status" hidden></div>');
+$('#pick-stage').onclick=()=>{clearTimeout(pickHide);$('#pick-stage').hidden=true};
+$('#pick-go').onclick=pick;
+$('#pick-reset').onclick=()=>{pickRun++;clearTimeout(pickHide);$('#pick-stage').hidden=true;picker.picked=[];$('#pick-result').textContent='—';savePicker()};
+$('#pick-norepeat').checked=picker.noRepeat;$('#pick-count').value=picker.count;$('#pick-names').value=picker.names;
+$('#pick-norepeat').onchange=e=>{picker.noRepeat=e.target.checked;savePicker()};
+$('#pick-count').onchange=e=>{const n=Math.round(+e.target.value);if(n>=1&&n<=200)picker.count=n;picker.picked=[];savePicker()};
+$('#pick-names').onchange=e=>{picker.names=e.target.value;picker.picked=[];savePicker()};
+savePicker();
+
+function setTools(open){$('#tools-panel').hidden=!open;$('#tools').setAttribute('aria-expanded',open)}
+$('#tools').onclick=()=>setTools($('#tools-panel').hidden);
+document.addEventListener('click',e=>{if(!e.target.closest('#tools-panel,#tools'))setTools(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#tools-panel').hidden){setTools(false);$('#tools').focus()}});

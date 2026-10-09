@@ -142,5 +142,47 @@ details[open]>summary::after,#hint[aria-expanded="true"]::after{transform:rotate
 .structure-flow ul{margin:0;padding-left:20px}.structure-flow ul li{font-size:18px;line-height:1.6;margin-top:8px;color:var(--ink)}
 @media(max-width:1100px){.structure-flow{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 34px}.structure-flow>li:nth-child(2)::after{content:none}}
 @media(max-width:600px){.structure{padding:22px 19px}.structure-flow{grid-template-columns:1fr}.structure-flow>li::after{content:none!important}.structure-head h3{font-size:25px}.structure-question,.structure-answer{font-size:18px}}
-/* Quiet link to the public repository. */
-.repo-link{flex:none;display:inline-flex;align-items:center;color:var(--muted);padding:5px;margin-left:-8px;border-radius:6px;transition:color .15s}.repo-link:hover{color:var(--blue)}.repo-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* Classroom tools: lesson timer, random picker and the repository link. */
+.topbar-inner{position:relative}
+.timer{flex:none;border:0;background:transparent;padding:6px 10px;border-radius:7px;font:500 16px/1.2 -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.3px;color:var(--muted);white-space:nowrap}
+.timer[data-state="ontrack"]{color:#256f52;background:#e6f2ec}
+.timer[data-state="behind"]{color:#8a5a00;background:#f7ecd0}
+.timer[data-state="ending"],.timer[data-state="over"]{color:#a8321f;background:#f9e3de}
+.timer[data-state="over"]{font-weight:700}
+.timer[data-state="paused"]{color:var(--muted);background:var(--soft)}
+#tools{font-size:13px;color:var(--muted)}#tools[aria-expanded="true"]{color:var(--blue)}
+.tools-panel{position:absolute;top:calc(100% + 8px);right:0;z-index:20;width:min(390px,calc(100vw - 32px));max-height:calc(100vh - 110px);overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 40px rgba(32,50,70,.16);padding:6px 22px 16px}
+.tools-panel section{padding:16px 0}.tools-panel section+section{border-top:1px solid var(--line)}
+.tools-panel h2{font-size:15px;font-weight:600;margin:0 0 10px}
+.tools-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:10px 0}
+.tools-row button{font-size:14px;padding:7px 14px}
+.tools-field{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;color:var(--muted);margin:10px 0}
+.tools-field input,.tools-field textarea{font:inherit;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 9px;background:var(--paper)}
+.tools-field input[type="number"]{width:84px}.tools-field textarea{flex:1;min-width:0;resize:vertical}
+.tools-field:has(textarea){flex-direction:column;align-items:stretch}
+.tools-check{display:inline-flex;align-items:center;gap:7px;font-size:14px;color:var(--muted)}
+.tools-status{font-size:14px;color:var(--muted);margin:0}.tools-note{font-size:12.5px;line-height:1.7;color:var(--muted);margin:10px 0 0}
+.pick-result{font:400 46px/1.25 Georgia,"PingFang SC",serif;color:var(--blue);text-align:center;margin:6px 0 12px;min-height:58px;overflow-wrap:anywhere}
+.repo-link{display:inline-flex;align-items:center;gap:10px;color:var(--muted);font-size:14px;text-decoration:none}.repo-link:hover{color:var(--blue)}.repo-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+@media(min-width:1101px){.timer{font-size:18px}#tools{font-size:14px}}
+@media(max-width:480px){.timer{font-size:14px;padding:4px 7px}#tools{font-size:12px;padding:0}}
+#tools{display:inline-flex;align-items:center;padding:6px;border-radius:7px}#tools:hover{color:var(--blue);background:var(--soft)}
+@media(max-width:480px){#tools{padding:4px}}
+/* Timer, quieter: plain text in the header's own type, colour carried by a dot and the elapsed time only. */
+.timer,.timer[data-state]{display:inline-flex;align-items:center;gap:0;background:transparent;padding:6px 0;border-radius:4px;font-size:13px;font-weight:400;letter-spacing:.2px;color:var(--muted)}
+.timer:hover{background:transparent}
+.timer::before{content:"";width:6px;height:6px;border-radius:50%;margin-right:9px;background:#b8c1c9;flex:none}
+.timer .timer-total{white-space:pre;opacity:.75}
+.timer[data-state="ontrack"]::before{background:#3d8f6c}.timer[data-state="ontrack"] .timer-now{color:#2c6e52}
+.timer[data-state="behind"]::before{background:#c98a10}.timer[data-state="behind"] .timer-now{color:#8a5a00}
+.timer[data-state="ending"]::before,.timer[data-state="over"]::before{background:#c2412c}.timer[data-state="ending"] .timer-now,.timer[data-state="over"] .timer-now{color:#a8321f}
+.timer[data-state="over"] .timer-now{font-weight:600}
+.timer[data-state="waiting"]::before{background:transparent;box-shadow:inset 0 0 0 1px #8c98a3}
+#tools{margin-left:-12px}#tools svg{width:18px;height:18px}
+@media(min-width:1101px){.timer,.timer[data-state]{font-size:14px}}
+@media(max-width:480px){.timer,.timer[data-state]{font-size:12px;padding:4px 0}#tools{margin-left:-4px}}
+/* Keep the header (modules, full screen, timer, tools) in view while the lesson scrolls. */
+@media(min-width:821px){.topbar{position:sticky;top:0;z-index:30;background:var(--paper)}.language,#structure{scroll-margin-top:112px}}
+/* The picked student, shown large in the middle of the screen for a few seconds. */
+.pick-stage{position:fixed;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;padding:6vw;background:rgba(250,249,246,.9);font:400 clamp(64px,13vw,220px)/1.15 Georgia,"PingFang SC",serif;letter-spacing:-.02em;color:#8fa3b5;text-align:center;overflow-wrap:anywhere;cursor:pointer}
+.pick-stage[hidden]{display:none}.pick-stage.settled{color:var(--blue)}
