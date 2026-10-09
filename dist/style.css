@@ -142,3 +142,5 @@ details[open]>summary::after,#hint[aria-expanded="true"]::after{transform:rotate
 .structure-flow ul{margin:0;padding-left:20px}.structure-flow ul li{font-size:18px;line-height:1.6;margin-top:8px;color:var(--ink)}
 @media(max-width:1100px){.structure-flow{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 34px}.structure-flow>li:nth-child(2)::after{content:none}}
 @media(max-width:600px){.structure{padding:22px 19px}.structure-flow{grid-template-columns:1fr}.structure-flow>li::after{content:none!important}.structure-head h3{font-size:25px}.structure-question,.structure-answer{font-size:18px}}
+/* Quiet link to the public repository. */
+.repo-link{flex:none;display:inline-flex;align-items:center;color:var(--muted);padding:5px;margin-left:-8px;border-radius:6px;transition:color .15s}.repo-link:hover{color:var(--blue)}.repo-link:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
